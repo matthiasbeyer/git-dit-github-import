@@ -80,7 +80,7 @@ fn main() {
 
             let dit_issue = {
                 let author  = signature_for(&issue.user.login, &issue.created_at);
-                let message = &issue.body;
+                let message = format!("{}\n\n{}", issue.title, issue.body);
                 let tree    = repo.empty_tree().expect("Failed to create empty tree");
                 let parents = vec![];
                 repo.create_issue(&author, &committer, &message, &tree, &parents)
