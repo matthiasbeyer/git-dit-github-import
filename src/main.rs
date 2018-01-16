@@ -95,6 +95,7 @@ fn main() {
                 .into_iter();
 
             for comment in comments {
+                progress.set_message(&format!("Fetching issue {}, comment {}", issue.number, comment.id));
                 let author  = signature_for(&comment.user.login, &comment.created_at);
                 let subject = parent.reply_subject();
                 let tree    = parent.tree().expect("Failed to get tree from parent");
