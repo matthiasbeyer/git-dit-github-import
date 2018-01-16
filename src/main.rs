@@ -34,21 +34,19 @@ fn main() {
     let username   = matches.value_of("username").expect("No username");
     let reponame   = matches.value_of("reponame").expect("No reponame");
     let useragent  = String::from("user-agent-name");
-    let core       = Core::new().expect("Cannot initialize tokei Core");
+    let mut core   = Core::new().expect("Cannot initialize tokei Core");
     let github     = Github::new(useragent, None, &core.handle());
     let issues     = Issues::new(github, username, reponame);
 
     progress.set_message("Fetching issue list");
-    let issue_list = issues.list(&IssueListOptions::default())
-        .wait()
+    let issue_list = core.run(issues.list(&IssueListOptions::default()))
         .expect("Failed to fetch issues!");
 
     for issue in issue_list.iter() {
         progress.set_message(&format!("Fetching issue {}", issue.number));
         let iref : IssueRef<_> = Issues::get(&issues, issue.number);
-        iref.comments()
-            .list(&CommentListOptions::default())
-            .wait()
+        core.run(iref.comments()
+            .list(&CommentListOptions::default()))
             .expect(&format!("Failed to get comments for issue {}", issue.number))
             .into_iter()
             .for_each(|comment| {
