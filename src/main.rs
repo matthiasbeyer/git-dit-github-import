@@ -7,6 +7,7 @@ extern crate indicatif;
 extern crate libgitdit;
 extern crate git2;
 extern crate chrono;
+extern crate textwrap;
 
 use tokio_core::reactor::Core;
 use hubcaps::Github;
@@ -80,7 +81,8 @@ fn main() {
 
             let dit_issue = {
                 let author  = signature_for(&issue.user.login, &issue.created_at);
-                let message = format!("{}\n\n{}", issue.title, issue.body);
+                let message = format!("{}\n\n{}", issue.title,
+                                      ::textwrap::fill(&issue.body, 72));
                 let tree    = repo.empty_tree().expect("Failed to create empty tree");
                 let parents = vec![];
                 repo.create_issue(&author, &committer, &message, &tree, &parents)
@@ -100,9 +102,11 @@ fn main() {
                 let subject = parent.reply_subject();
                 let tree    = parent.tree().expect("Failed to get tree from parent");
                 let message = if let Some(subj) = subject {
-                    format!("{subject}\n\n{body}", subject = subj, body = &comment.body)
+                    format!("{subject}\n\n{body}",
+                            subject = subj,
+                            body = ::textwrap::fill(&comment.body, 72))
                 } else {
-                    comment.body.clone()
+                    ::textwrap::fill(&comment.body, 72)
                 };
 
                 let new_parent = {
